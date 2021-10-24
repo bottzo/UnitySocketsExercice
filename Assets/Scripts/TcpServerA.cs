@@ -6,7 +6,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Text;
 
-public class TcpServer : MonoBehaviour
+public class TcpServerA : MonoBehaviour
 {
     private Thread serverThread;
     private object quitLock = new object();
@@ -47,14 +47,10 @@ public class TcpServer : MonoBehaviour
         IPEndPoint clientIp = (IPEndPoint)clientSocket.RemoteEndPoint;
         Debug.Log("New client connected. Address: " + clientIp.Address + "Port: " + clientIp.Port);
         byte[] data = new byte[1024];
-        int count = 0;
 
         while (true)
         {
             int recv = clientSocket.Receive(data);
-            //Receive returns 0 if client is disconnected
-            //serverSocket.ReceiveTimeout
-            //serverSocket.SendTimeout
             if(recv == 0)
             {
                 Debug.Log("Recieved empty message: disconnecting");
@@ -62,18 +58,18 @@ public class TcpServer : MonoBehaviour
             }
             string received = Encoding.ASCII.GetString(data, 0, recv);
             Debug.Log("Received " + received + " from client");
-            if (received == "Ping" && count < 4)
+            if (received == "Ping")
             {
                 Thread.Sleep(500);
                 Debug.Log("Sending Pong back to client");
                 clientSocket.Send(Encoding.ASCII.GetBytes("Pong"));
-                ++count;
             }
         }
         //clientSocket.Shutdown(SocketShutdown.Both);
         //serverSocket.Shutdown(SocketShutdown.Both);
         clientSocket.Close();
         serverSocket.Close();
+        //Requesting the application to exit
         lock (quitLock)
         {
             quit = true;

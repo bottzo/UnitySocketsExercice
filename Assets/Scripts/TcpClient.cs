@@ -49,26 +49,33 @@ public class TcpClient : MonoBehaviour
         byte[] data = new byte[1024];
         Debug.Log("Sending first ping to server");
         clientSocket.Send(Encoding.ASCII.GetBytes("Ping"));
-        int pingsSent = 1;
+        int pongsReceived = 0;
 
         while (true)
         {
-            if (pingsSent < 5)
+            int recv = clientSocket.Receive(data);
+            string receivedString = Encoding.ASCII.GetString(data, 0, recv);
+            Debug.Log("Received " + receivedString + "from server");
+            if (receivedString == "Pong")
             {
-                int recv = clientSocket.Receive(data);
-                string receivedString = Encoding.ASCII.GetString(data, 0, recv);
-                Debug.Log("Received " + receivedString + "from server");
-                if (receivedString == "Pong")
+                ++pongsReceived;
+                Debug.Log("Received Pong number " + pongsReceived + " from server");
+                if (pongsReceived < 5)
                 {
                     Thread.Sleep(500);
-                    ++pingsSent;
-                    Debug.Log("Sending Ping number " + pingsSent + " to server");
+                    Debug.Log("Sending Ping to server");
                     clientSocket.Send(Encoding.ASCII.GetBytes("Ping"));
                 }
+                else
+                {
+                    Debug.Log("Already received all pongs");
+                    Debug.Log("Closing client app");
+                    break;
+                }
             }
-            else
+            if(receivedString == "Exit")
             {
-                Debug.Log("Already sent all the pings");
+                Debug.Log("Received exit request from server");
                 Debug.Log("Closing client app");
                 break;
             }

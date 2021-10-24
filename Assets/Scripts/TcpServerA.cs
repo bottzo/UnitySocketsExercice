@@ -65,8 +65,6 @@ public class TcpServerA : MonoBehaviour
                 clientSocket.Send(Encoding.ASCII.GetBytes("Pong"));
             }
         }
-        //clientSocket.Shutdown(SocketShutdown.Both);
-        //serverSocket.Shutdown(SocketShutdown.Both);
         clientSocket.Close();
         serverSocket.Close();
         //Requesting the application to exit

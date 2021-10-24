@@ -10,7 +10,8 @@ public class UdpClient : MonoBehaviour
 {
     private Socket connectionSocket;
     private Thread listeningThread;
-    // Start is called before the first frame update
+    private object quitLock = new object();
+    bool quit = false;
     void Start()
     {
         connectionSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
@@ -24,7 +25,16 @@ public class UdpClient : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        bool quitting = false;
+        lock (quitLock)
+        {
+            quitting = quit;
+        }
+        if (quitting)
+        {
+            //Debug.Log("Qitting client");
+            Application.Quit();
+        }
     }
 
     void OnDestroy()
@@ -67,12 +77,19 @@ public class UdpClient : MonoBehaviour
                     break;
                 }
             }
-            catch (System.Exception e)
+            catch (SocketException e)
             {
                 Debug.Log("Exception caught: " + e.GetType());
                 Debug.Log(e.Message);
-                //Debug.Log("Trying again in 5 seconds");
-                //Thread.Sleep(5000);
+                if(e.SocketErrorCode == SocketError.ConnectionReset)
+                {
+                    Debug.Log("Could not connect to server because it is down");
+                    Debug.Log("Exiting client app");
+                    lock (quitLock)
+                    {
+                        quit = true;
+                    }
+                }
             }
         }
         Debug.Log("Exiting listening thread");

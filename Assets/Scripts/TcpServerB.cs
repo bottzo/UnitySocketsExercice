@@ -102,11 +102,17 @@ public class TcpServerB : MonoBehaviour
         Socket closeSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         IPEndPoint serverIpep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9052);
         closeSocket.Connect((EndPoint)serverIpep);
-        //byte[] data = new byte[1024];
-        //int recv = closeSocket.Receive(data);
-        //string receivedString = Encoding.ASCII.GetString(data, 0, recv);
-        //if()
-        closeSocket.Shutdown(SocketShutdown.Both);
-        closeSocket.Close();
+         byte[] data = new byte[1024];
+         int recv = closeSocket.Receive(data);
+         string receivedString = Encoding.ASCII.GetString(data, 0, recv);
+         if (receivedString == "Exit")
+         {
+             closeSocket.Shutdown(SocketShutdown.Both);
+             closeSocket.Close();
+         }
+        else
+        {
+            Debug.Log("BIG FAT PROBLEM");
+        }
     }
 }

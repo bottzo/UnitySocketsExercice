@@ -29,9 +29,6 @@ public class TcpClient : MonoBehaviour
         if (quitting)
         {
             //Debug.Log("Qitting client");
-//#if UNITY_EDITOR
-//            UnityEditor.EditorApplication.isPlaying = false;
-//#endif
             Application.Quit();
         }
     }
@@ -43,8 +40,24 @@ public class TcpClient : MonoBehaviour
     {
         Socket clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         IPEndPoint serverIpep = new IPEndPoint(IPAddress.Parse("127.0.0.1"), 9052);
-        //FER EL TRY CATCH EN EL CONNECT
-        clientSocket.Connect((EndPoint)serverIpep);
+        try
+        {
+            clientSocket.Connect((EndPoint)serverIpep);
+        }
+        catch(SocketException e)
+        {
+            if(e.SocketErrorCode == SocketError.ConnectionRefused)
+            {
+                Debug.Log("Could not connect to server because server is down");
+                clientSocket.Close();
+                lock (quitLock)
+                {
+                    quit = true;
+                }
+                Debug.Log("Exiting client connection thread");
+                return;
+            }
+        }
         Debug.Log("Succesfully connected with server");
         byte[] data = new byte[1024];
         Debug.Log("Sending first ping to server");
